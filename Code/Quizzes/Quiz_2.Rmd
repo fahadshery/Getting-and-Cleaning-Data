@@ -33,63 +33,87 @@ myapp <- oauth_app("github", "19dc655defc5726ea423", "eccb83db875b93387eae87a939
 
 # 3. Get OAuth credentials
 github_token <- oauth2.0_token(oauth_endpoints("github"), myapp)
+class(github_token)
 
 # 4. Use API
 req <- GET("https://api.github.com/users/jtleek/repos", config(token = github_token))
 stop_for_status(req)
 content(req)
 
+# 5. Install JSONLITE package
+install.packages("jsonlite")
+library(jsonlite)
+
+# 6. Now convert the contents into JSON format
+json <- content(req)
+
+json2 <- fromJSON(toJSON(json, pretty=TRUE))
+class(json2)
+str(json2)
+names(json2)
+cat(json2)
+
+head(json2)
+json2$owner$login
+
 ```
 
-**ANS**: 53
+**ANS**: 1, To answer this question, you need to convert the JSON format to a dataframe and then simply use the head(json2) command and under the *created_at* variable/column you will find the answer
 
 ## Question 2
 
-Use the data you loaded from Question 1. Consider the variable FES in the code book. Which of the "tidy data" principles does this variable violate?
+The sqldf package allows for execution of SQL commands on R data frames. We will use the sqldf package to practice the queries we might send with the dbSendQuery command in RMySQL. Download the American Community Survey data and load it into an R object called
 
-1. Tidy data has variable values that are internally consistent.
-2. Tidy data has one observation per row.
-3. Tidy data has one variable per column.
-4. Each variable in a tidy data set has been transformed to be interpretable.
+ acs
 
+https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2Fss06pid.csv
+
+Which of the following commands will select only the data for the probability weights pwgtp1 with ages less than 50?
+
+1. sqldf("select * from acs where AGEP < 50 and pwgtp1")
+2. sqldf("select pwgtp1 from acs where AGEP < 50")
+3. sqldf("select * from acs")
+4. sqldf("select * from acs where AGEP < 50") 
 
 ```{r Q2}
-head(housingData$FES)
-table(housingData$FES)
+install.packages("sqldf")
+library(sqldf)
+
+# download file
+download.file("https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2Fss06pid.csv", destfile="Quiz2_Q2.csv")
+
+#load into R
+acs = read.csv("Quiz2_Q2.csv")
+str(acs)
+
+#try queries
+sqldf("select * from acs where AGEP <50 and pwgtp1")
+sqldf("select pwgtp1 from acs where AGEP < 50") #this will select column pwgtp1 where agep is less than 50
+sqldf("select * from acs") #this will select everything
+sqldf("select * from acs where AGEP < 50") #this will select everything where age is less than 50
 ```
 
-**ANS**:
+**ANS**: 2
 
 
 ## Question 3
 
-Download the Excel spreadsheet on Natural Gas Aquisition Program here:
+Using the same data frame you created in the previous problem, what is the equivalent function to unique(acs$AGEP)
 
-https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FDATA.gov_NGAP.xlsx
+1. sqldf("select unique AGEP from acs")
+2. sqldf("select distinct AGEP from acs")
+3. sqldf("select distinct pwgtp1 from acs")
+4. sqldf("select AGEP where unique from acs")
 
-Read rows 18-23 and columns 7-15 into R and assign the result to a variable called:
-
-dat 
-
-What is the value of:
-
-sum(dat$Zip*dat$Ext,na.rm=T) 
-
-(original data source: http://catalog.data.gov/dataset/natural-gas-acquisition-program)
-
-1. 154339
-2. 338924
-3. 184585
-4. 36534720
 
 ```{r Q3}
-install.packages("xlsx")
-library(xlsx)
-dat = read.xlsx("getdata_data_DATA.gov_NGAP.xlsx",header=TRUE, sheetIndex=1,colIndex=7:15, rowIndex=18:23)
-str(dat)
-sum(dat$Zip*dat$Ext,na.rm=T)
+unique(acs$AGEP)
+sqldf("select unique AGEP from acs") #not a SQL command
+sqldf("select distinct AGEP from acs") #selects unique values from AGEP column in ACS dataframe
+sqldf("select distinct pwgtp1 from acs") # selects unique values from pwgtp1 column in ACS dataframe
+sqldf("select AGEP where unique from acs") #not a SQL command
 ```
-**ANS**: 4
+**ANS**: 2
 
 
 ## Question 4
