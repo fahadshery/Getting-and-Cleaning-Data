@@ -133,33 +133,42 @@ mergedData = merge(gdp, education, by.x="X", by.y="CountryCode", all=FALSE)
 
 str(mergedData)
 
+#using regular expression
+length(grep("^[Ff]iscal year .* [Jj]une(.)", mergedData$Special.Notes))
 
-grep("^[Fiscal][Jj]une(.)", mergedData$Special.Notes)
-mergedData$Special.Notes[95]
-
+#we can find the word June in the dataset by:
 which(sapply(mergedData, function(x) any(grep("June",x))))
-table(mergedData$Special.Notes)
+
 ```
 
-**ANS**: 6
+**ANS**: 1
 
 
 ## Question 5
 
-Cut the GDP ranking into 5 separate quantile groups. Make a table versus Income.Group. How many countries are Lower middle income but among the 38 nations with highest GDP?
+You can use the quantmod (http://www.quantmod.com/) package to get historical stock prices for publicly traded companies on the NASDAQ and NYSE. Use the following code to download data on Amazon's stock price and get the times the data was sampled.
 
-1. 5
-2. 12
-3. 13
-4. 1
 
+
+How many values were collected in 2012? How many values were collected on Mondays in 2012?
+
+1. 250, 47         	
+2. 251, 47 			
+3. 250, 51 			
+4. 365, 52
 
 
 ```{r Q5}
-install.packages("Hmisc")
-library(Hmisc)
-mergedData$RankingGroups = cut2(as.numeric(mergedData$Gross.domestic.product.2012), g=5 )
-table(mergedData$RankingGroups, mergedData$Income.Group)
+install.packages("quantmod")
+library(quantmod)
+amzn = getSymbols("AMZN",auto.assign=FALSE)
+str(amzn)
+sampleTimes = index(amzn) 
+class(sampleTimes)
+install.packages("lubridate")
+library(lubridate)
+table(year(sampleTimes))
+table(year(sampleTimes),weekdays(sampleTimes))
 ```
 
 **ANS:** 1
